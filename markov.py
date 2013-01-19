@@ -38,12 +38,15 @@ def hs_bucket(h, s, v, n=12):
 def gen_bucket_sequence(image_dir):
     res = {} 
     for i in os.listdir(image_dir):
-        im = I.open(os.path.join(image_dir, i))
-        n = int(i.split('.')[0])
-        mode_bucket = max(color_histogram(im).items(), key=lambda x: x[1])
-        res[n] = mode_bucket
-        print {'num':n, 'mode_bucket':mode_bucket, 'path':i}
-   
+        try:
+            im = I.open(os.path.join(image_dir, i))
+            n = int(i.split('.')[0])
+            mode_bucket = max(color_histogram(im).items(), key=lambda x: x[1])
+            res[n] = mode_bucket
+            print {'num':n, 'mode_bucket':mode_bucket, 'path':i}
+        except:
+            print '!'+i
+
     print
     print res
     print
