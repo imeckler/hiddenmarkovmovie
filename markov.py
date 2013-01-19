@@ -42,7 +42,7 @@ def gen_bucket_sequence(image_dir):
         n = int(i.split('.')[0])
         mode_bucket = max(color_histogram(im).items(), key=lambda x: x[1])
         res[n] = mode_bucket
-        print {'num':n, 'mode_bucket':mode_bucket}
+        print {'num':n, 'mode_bucket':mode_bucket, 'path':i}
    
     print
     print res
