@@ -45,8 +45,9 @@ def gen_bucket_sequence(image_dir):
             n = int(i.split('.')[0])
             hist, avg = hist_and_avg(im)
             mode_bucket = max(hist.items(), key=lambda x: x[1])
-            res[n] = (mode_bucket, avg)
-            print {'num':n, 'mode_bucket':mode_bucket, 'avg': avg,'path':i}
+            avg_bucket = hs_bucket(*avg)
+            res[n] = (mode_bucket, avg_bucket)
+            print {'num':n, 'mode_bucket':mode_bucket, 'avg_bucket': avg_bucket, 'avg': avg,'path':i}
         except Exception as e:
             if type(e) == KeyboardInterrupt:
                 raise e
@@ -122,7 +123,7 @@ def hist_and_avg(img):
         h_sum += h
         s_sum += s
         v_sum += v
-        res[hs_bucket(h, s, v, n=10)] += 1
+        res[hs_bucket(h, s, v, n=12)] += 1
 
     return (res, (h_sum / num_pixels, s_sum / num_pixels, v_sum / num_pixels))
 
