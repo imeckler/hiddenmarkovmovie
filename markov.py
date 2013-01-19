@@ -19,8 +19,7 @@ def average_rgb(path):
     
     return (int(r_sum / num_pixels), int(g_sum / num_pixels), int(b_sum / num_pixels))
 
-def average_hsv(path):
-    im = I.open(path)
+def average_hsv(im):
     h_sum, s_sum, v_sum = 0, 0, 0
     num_pixels = 0
 
@@ -39,11 +38,12 @@ def hs_bucket(h, s, v, n=12):
 def gen_bucket_sequence(image_dir):
     res = {} 
     for i in os.listdir(image_dir):
-        hsv = average_hsv(os.path.join(image_dir, i))
-        buckets = hs_bucket(*hsv)
+        im = I.open(os.path.join(image_dir, i))
+        hsv = average_hsv(im)
+        buckets = hs_bucket(*hsv, n=10)
         n = int(i.split('.')[0])
         res[n] = buckets
-        print n, hsv, buckets
+        print {'num':n, 'hsv':hsv, 'avg_bucket': buckets, 'mode_bucket':max(color_histogram(im).items(), key=lambda x: x[1])}
    
     print
     print res
@@ -87,6 +87,12 @@ def main():
     res = gen_bucket_sequence(image_dir)
     print
     print res
+
+def color_histogram(img):
+    res = defaultdict(int)
+    for r, g, b in img.getdata():
+        res[hs_bucket(*rgb_to_hsv(r/255.0, g/255.0, b/255.0), n=10)] += 1
+    return res
 
 if __name__ == '__main__':
     main()
