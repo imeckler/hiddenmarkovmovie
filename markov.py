@@ -39,11 +39,10 @@ def gen_bucket_sequence(image_dir):
     res = {} 
     for i in os.listdir(image_dir):
         im = I.open(os.path.join(image_dir, i))
-        hsv = average_hsv(im)
-        buckets = hs_bucket(*hsv, n=10)
         n = int(i.split('.')[0])
-        res[n] = buckets
-        print {'num':n, 'hsv':hsv, 'avg_bucket': buckets, 'mode_bucket':max(color_histogram(im).items(), key=lambda x: x[1])}
+        mode_bucket = max(color_histogram(im).items(), key=lambda x: x[1])
+        res[n] = mode_bucket
+        print {'num':n, 'mode_bucket':mode_bucket}
    
     print
     print res
