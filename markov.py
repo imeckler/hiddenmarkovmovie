@@ -5,6 +5,8 @@ import os
 import sys
 from collections import defaultdict
 import random
+import shutil
+import subprocess
 
 def average_rgb(path):
     im = I.open(path)
@@ -41,10 +43,13 @@ def gen_bucket_sequence(image_dir):
         try:
             im = I.open(os.path.join(image_dir, i))
             n = int(i.split('.')[0])
-            mode_bucket = max(color_histogram(im).items(), key=lambda x: x[1])
-            res[n] = mode_bucket
-            print {'num':n, 'mode_bucket':mode_bucket, 'path':i}
-        except:
+            hist, avg = hist_and_avg(im)
+            mode_bucket = max(hist.items(), key=lambda x: x[1])
+            res[n] = (mode_bucket, avg)
+            print {'num':n, 'mode_bucket':mode_bucket, 'avg': avg,'path':i}
+        except Exception as e:
+            if type(e) == KeyboardInterrupt:
+                raise e
             print '!'+i
 
     print
@@ -84,11 +89,42 @@ def run_markov(markov, n=100):
         run.append(state)
     return run
 
+def gen_image_sequence(markov_run, bucket_map):
+    return [random.choice(bucket_map[b]) for b in markov_run]
+
+def heman_remix(dest, n=1000):
+    bucket_map = eval(open('hemandata/hemanbucketmap').read())
+    buckets = [x for x, y in eval(open('hemandata/hemanbuckets').read())]
+    model = build_markov(buckets)
+    imgs = gen_image_sequence(run_markov(model, n), bucket_map)
+    
+    os.mkdir(dest)
+    for i, img in enumerate(imgs, 1):
+        shutil.copyfile('heman/{}.jpg'.format(img), os.path.join(dest, '{}.jpg'.format(i)))
+
+    subprocess.call(['ffmpeg', '-f', 'image2', '-i', os.path.join(dest, '%d.jpg'), dest + '.mpeg'])
+
+
 def main():
     image_dir = sys.argv[1]
     res = gen_bucket_sequence(image_dir)
     print
     print res
+
+def hist_and_avg(img):
+    res = defaultdict(int)
+    h_sum, s_sum, v_sum = 0, 0, 0
+    num_pixels = 0
+
+    for r, g, b in img.getdata():
+        num_pixels += 1
+        h, s, v = rgb_to_hsv(r/255.0, g/255.0, b/255.0)
+        h_sum += h
+        s_sum += s
+        v_sum += v
+        res[hs_bucket(h, s, v, n=10)] += 1
+
+    return (res, (h_sum / num_pixels, s_sum / num_pixels, v_sum / num_pixels))
 
 def color_histogram(img):
     res = defaultdict(int)
